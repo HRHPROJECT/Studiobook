@@ -1,26 +1,116 @@
 @import "tailwindcss";
 
+/* ----------------------------------------------------------------------
+   StudioBook — Design System (navy + gold, réf. prototype Figma V1)
+   Palette extraite de StudioBook_Template.pptx
+   ---------------------------------------------------------------------- */
+@theme {
+  /* brand = navy ; accent / glow = gold */
+  --color-brand: #101827;        /* navy */
+  --color-brand-600: #1b2740;    /* navy hover */
+  --color-brand-400: #3b465f;    /* navy muted */
+  --color-navy-700: #1a2236;     /* inputs on navy */
+  --color-navy-900: #0b1320;
+  --color-navy-950: #070c15;
+
+  --color-accent: #c9a35a;       /* gold */
+  --color-accent-600: #b08a3f;   /* gold hover */
+  --color-gold-dark: #a8823f;    /* gold text on light */
+  --color-glow: #e8ce93;         /* gold light */
+
+  --color-ink: #101827;
+  --color-muted: #667085;
+  --color-surface: #fafaf8;      /* off-white */
+  --color-cream: #fafaf8;
+  --color-greige: #dad7cf;
+  --color-line: #e6e3dc;
+
+  --color-success: #2f9e83;
+  --color-error: #c0492f;
+  --color-info: #3a86ff;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.5rem;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fafaf8;
+  --foreground: #101827;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+* {
+  box-sizing: border-box;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
+
+/* Focus visible — RGAA + WCAG 2.4.7 */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Lien d'évitement — RGAA 12.7 */
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: 0;
+  z-index: 100;
+  background: var(--color-brand);
+  color: #fff;
+  padding: 0.75rem 1rem;
+  border-radius: 0 0 0.5rem 0;
+}
+.skip-link:focus {
+  left: 0;
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Soft elevation used on cards and sticky bars */
+.card-shadow {
+  box-shadow: 0 1px 2px rgba(16, 24, 39, 0.05), 0 10px 28px rgba(16, 24, 39, 0.08);
+}
+.cta-shadow {
+  box-shadow: 0 8px 22px rgba(16, 24, 39, 0.18);
+}
+
+/* Discipline image placeholders — navy base, gold motif sits on top */
+.grad-musique { background: linear-gradient(135deg, #101827 0%, #1d2740 100%); }
+.grad-podcast { background: linear-gradient(135deg, #0f1a2c 0%, #243042 100%); }
+.grad-photo   { background: linear-gradient(135deg, #131a2b 0%, #2a2233 100%); }
+.grad-video   { background: linear-gradient(135deg, #121a2b 0%, #0a0f17 100%); }
+.grad-danse   { background: linear-gradient(135deg, #141b2d 0%, #0b0f18 100%); }
+
+/* gold radial sheen for hero / image zones */
+.gold-sheen {
+  background-image: radial-gradient(120% 120% at 85% 15%, rgba(201, 163, 90, 0.28) 0%, rgba(201, 163, 90, 0) 55%);
+}
+
+@keyframes pop-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.animate-pop { animation: pop-in 0.3s ease-out both; }
