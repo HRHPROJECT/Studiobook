@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getDb } from "@/lib/server/db";
+import { all } from "@/lib/server/db";
 
 type Row = Record<string, unknown>;
 
@@ -34,7 +34,7 @@ export async function GET(req: Request) {
   const pmr = url.searchParams.get("pmr");
 
   const where: string[] = [];
-  const params: unknown[] = [];
+  const params: (string | number)[] = [];
   if (discipline && discipline !== "all") { where.push("discipline = ?"); params.push(discipline); }
   if (city) { where.push("city = ?"); params.push(city); }
   if (maxPrice) { where.push("price_per_hour <= ?"); params.push(Number(maxPrice)); }
@@ -47,6 +47,6 @@ export async function GET(req: Request) {
   }
 
   const sql = `SELECT * FROM studios ${where.length ? "WHERE " + where.join(" AND ") : ""} ORDER BY rating DESC`;
-  const rows = getDb().prepare(sql).all(...params) as Row[];
+  const rows = await all<Row>(sql, params);
   return NextResponse.json({ studios: rows.map(mapStudio) });
 }

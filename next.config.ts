@@ -2,14 +2,13 @@ import type { NextConfig } from "next";
 import path from "node:path";
 
 const nextConfig: NextConfig = {
-  // Pin the workspace root to this app. A stray package-lock.json in the parent
-  // folder (C:\Users\rhlal) otherwise makes Turbopack infer the wrong root and
-  // breaks the React Client Manifest resolution.
+  // Épingle la racine du workspace à cette app (évite une mauvaise inférence Turbopack
+  // si un package-lock.json traîne dans le dossier parent).
   turbopack: {
     root: path.resolve(__dirname),
   },
-  // Keep the native SQLite module out of the bundle (runs only in Node route handlers).
-  serverExternalPackages: ["better-sqlite3"],
+  // Garde le client libSQL natif hors du bundle (n'est utilisé que dans les route handlers Node).
+  serverExternalPackages: ["@libsql/client", "libsql"],
 };
 
 export default nextConfig;

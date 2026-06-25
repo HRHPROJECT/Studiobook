@@ -1,0 +1,23 @@
+# Déploiement gratuit sur Render (https://render.com) — aucun moyen de paiement requis.
+# 1. Pousse ce repo sur GitHub.
+# 2. Render > New > Blueprint > sélectionne ce repo (détecte render.yaml).
+# 3. Renseigne TURSO_DATABASE_URL et TURSO_AUTH_TOKEN (voir .env.example) -> données persistantes.
+#    Sans ces variables le service démarre quand même mais en base éphémère.
+services:
+  - type: web
+    name: studiobook
+    runtime: node
+    plan: free
+    region: frankfurt
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: NODE_ENV
+        value: production
+      - key: TURSO_DATABASE_URL
+        sync: false
+      - key: TURSO_AUTH_TOKEN
+        sync: false

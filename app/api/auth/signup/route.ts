@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getDb } from "@/lib/server/db";
+import { get, run } from "@/lib/server/db";
 import { hashPassword, createSession, setSessionCookie } from "@/lib/server/auth";
 
 export async function POST(req: Request) {
@@ -14,16 +14,16 @@ export async function POST(req: Request) {
   if (password.length < 6)
     return NextResponse.json({ error: "Le mot de passe doit faire au moins 6 caractères." }, { status: 400 });
 
-  const db = getDb();
-  if (db.prepare("SELECT id FROM users WHERE email = ?").get(email))
+  if (await get("SELECT id FROM users WHERE email = ?", [email]))
     return NextResponse.json({ error: "Un compte existe déjà avec cet email." }, { status: 409 });
 
-  const info = db
-    .prepare("INSERT INTO users (name, email, password_hash, created_at) VALUES (?, ?, ?, ?)")
-    .run(name, email, hashPassword(password), Date.now());
+  const info = await run(
+    "INSERT INTO users (name, email, password_hash, created_at) VALUES (?,?,?,?)",
+    [name, email, hashPassword(password), Date.now()]
+  );
   const id = Number(info.lastInsertRowid);
 
-  const { token, expires } = createSession(id);
+  const { token, expires } = await createSession(id);
   await setSessionCookie(token, expires);
   return NextResponse.json({ user: { id, name, email } });
 }
