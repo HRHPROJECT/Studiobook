@@ -1,9 +1,8 @@
 "use client";
 
-import { use, useEffect } from "react";
+import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, MapPin, Navigation } from "lucide-react";
-import { getStudio } from "@/lib/studios";
 import { euro, hourLabel, formatDateISO } from "@/lib/format";
 import { useBooking } from "@/lib/booking-context";
 
@@ -32,16 +31,20 @@ export default function ReservationDetailPage({ params }: { params: Promise<{ re
   const router = useRouter();
   const { bookings, ready, cancelBooking } = useBooking();
   const booking = bookings.find((b) => b.ref === ref);
+  const [studio, setStudio] = useState<{ address: string; metro: string }>({ address: "", metro: "" });
 
   useEffect(() => {
     if (ready && !booking) router.replace("/reservations");
   }, [ready, booking, router]);
 
-  if (!booking) return null;
-  const studio = getStudio(booking.studioId);
-  if (!studio) return null;
+  useEffect(() => {
+    if (!booking) return;
+    fetch(`/api/studios/${booking.studioId}`).then((r) => (r.ok ? r.json() : null)).then((d) => d?.studio && setStudio({ address: d.studio.address, metro: d.studio.metro }));
+  }, [booking]);
 
-  const maps = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(studio.address)}`;
+  if (!booking) return null;
+
+  const maps = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(studio.address || booking.studioName)}`;
 
   return (
     <div className="min-h-screen bg-brand pb-10 text-white">
@@ -57,7 +60,7 @@ export default function ReservationDetailPage({ params }: { params: Promise<{ re
         <span className="inline-flex items-center gap-1.5 text-[13px] font-bold text-gold-dark">
           <span className="h-2 w-2 rounded-full bg-gold-dark" /> Confirmée
         </span>
-        <h2 className="mt-3 text-2xl font-extrabold">{studio.name}</h2>
+        <h2 className="mt-3 text-2xl font-extrabold">{booking.studioName}</h2>
         <div className="mt-4 rounded-xl bg-brand p-3">
           <FakeQR seed={booking.ref} />
         </div>

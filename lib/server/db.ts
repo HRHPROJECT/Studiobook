@@ -147,6 +147,8 @@ async function ensureColumns(db: Client) {
   await add("studios", "rules", "rules TEXT");
   await add("studios", "status", "status TEXT NOT NULL DEFAULT 'published'");
   await add("bookings", "updated_at", "updated_at INTEGER");
+  await add("reviews", "user_id", "user_id INTEGER");
+  await add("reviews", "booking_ref", "booking_ref TEXT");
 }
 
 async function seedStudios(db: Client) {

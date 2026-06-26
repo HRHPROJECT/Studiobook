@@ -45,8 +45,25 @@ export const gradFor = (d: Discipline) =>
   DISCIPLINES.find((x) => x.id === d)?.grad ?? "grad-musique";
 export const labelFor = (d: Discipline) =>
   DISCIPLINES.find((x) => x.id === d)?.label ?? d;
-export const disciplinesLabel = (s: Studio) =>
+export const disciplinesLabel = (s: { disciplines: Discipline[] }) =>
   s.disciplines.map(labelFor).join(", ");
+
+/** Forme légère utilisée par les cartes (compatible avec les données DB). */
+export type StudioSummary = {
+  id: string;
+  name: string;
+  discipline: Discipline;
+  disciplines: Discipline[];
+  city: string;
+  district: string;
+  distanceKm: number;
+  pricePerHour: number;
+  rating: number;
+  reviewCount: number;
+  verified: boolean;
+  topHost: boolean;
+  availableToday: boolean;
+};
 
 export const STUDIOS: Studio[] = [
   {

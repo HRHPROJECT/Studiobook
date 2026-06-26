@@ -10,14 +10,22 @@ import {
 
 export type BookingDraft = {
   studioId: string;
+  studioName: string;
+  pricePerHour: number;
   date: string; // ISO yyyy-mm-dd
   startHour: number;
   duration: number;
   ingeSon: boolean;
 };
 
-export type Booking = BookingDraft & {
+export type Booking = {
   ref: string;
+  studioId: string;
+  studioName: string;
+  date: string;
+  startHour: number;
+  duration: number;
+  ingeSon: boolean;
   total: number;
   accessCode: string;
   status: string;

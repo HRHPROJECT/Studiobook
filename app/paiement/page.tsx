@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Lock, AlertTriangle } from "lucide-react";
-import { getStudio } from "@/lib/studios";
 import { euro, hourLabel, formatDateISO, SERVICE_FEE } from "@/lib/format";
 import { useBooking } from "@/lib/booking-context";
 
@@ -23,10 +22,7 @@ export default function PaiementPage() {
   }, [ready, draft, user, router]);
 
   if (!draft) return null;
-  const studio = getStudio(draft.studioId);
-  if (!studio) return null;
-
-  const total = studio.pricePerHour * draft.duration + SERVICE_FEE;
+  const total = draft.pricePerHour * draft.duration + SERVICE_FEE;
 
   const pay = (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -117,7 +113,7 @@ export default function PaiementPage() {
       </div>
 
       <p className="px-5 pt-3 text-center text-[11px] text-white/40">
-        {studio.name} · {formatDateISO(draft.date)} · {hourLabel(draft.startHour)}–{hourLabel(draft.startHour + draft.duration)}
+        {draft.studioName} · {formatDateISO(draft.date)} · {hourLabel(draft.startHour)}–{hourLabel(draft.startHour + draft.duration)}
       </p>
     </div>
   );

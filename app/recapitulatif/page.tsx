@@ -2,8 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Check } from "lucide-react";
-import { getStudio, iconFor } from "@/lib/studios";
+import { ArrowLeft, Check, Building2 } from "lucide-react";
 import { euro, hourLabel, formatDateISO, SERVICE_FEE } from "@/lib/format";
 import { useBooking } from "@/lib/booking-context";
 import { Button } from "@/components/ui";
@@ -18,11 +17,7 @@ export default function RecapitulatifPage() {
   }, [ready, draft, user, router]);
 
   if (!draft) return null;
-  const studio = getStudio(draft.studioId);
-  if (!studio) return null;
-  const Ic = iconFor(studio.discipline);
-
-  const base = studio.pricePerHour * draft.duration;
+  const base = draft.pricePerHour * draft.duration;
   const total = base + SERVICE_FEE;
 
   return (
@@ -35,21 +30,17 @@ export default function RecapitulatifPage() {
       </header>
 
       <div className="px-5 pt-5">
-        {/* Studio */}
         <div className="flex items-center gap-4 rounded-2xl border border-line bg-white p-3">
-          <div className={`flex h-[72px] w-[72px] shrink-0 items-center justify-center rounded-xl gold-sheen ${"grad-" + studio.discipline}`}>
-            <Ic className="h-7 w-7 text-accent" strokeWidth={1.5} aria-hidden />
+          <div className="flex h-[72px] w-[72px] shrink-0 items-center justify-center rounded-xl bg-brand gold-sheen">
+            <Building2 className="h-7 w-7 text-accent" strokeWidth={1.5} aria-hidden />
           </div>
           <div className="min-w-0">
-            <p className="font-bold text-ink">{studio.name}</p>
-            <p className="text-sm text-muted">
-              {formatDateISO(draft.date)} · {hourLabel(draft.startHour)}–{hourLabel(draft.startHour + draft.duration)}
-            </p>
-            <p className="text-[13px] text-muted">{studio.district} · {draft.duration} heure{draft.duration > 1 ? "s" : ""}</p>
+            <p className="font-bold text-ink">{draft.studioName}</p>
+            <p className="text-sm text-muted">{formatDateISO(draft.date)} · {hourLabel(draft.startHour)}–{hourLabel(draft.startHour + draft.duration)}</p>
+            <p className="text-[13px] text-muted">{draft.duration} heure{draft.duration > 1 ? "s" : ""}</p>
           </div>
         </div>
 
-        {/* Price breakdown */}
         <div className="mt-4 rounded-2xl border border-line bg-white p-[18px]">
           <Row label={`Location · ${draft.duration} h`} value={euro(base)} />
           <Row label="Frais de service" value={euro(SERVICE_FEE)} />
@@ -66,9 +57,7 @@ export default function RecapitulatifPage() {
       </div>
 
       <div className="fixed bottom-0 left-1/2 z-30 w-full max-w-[440px] -translate-x-1/2 border-t border-line bg-white px-5 pb-6 pt-3">
-        <Button className="w-full" onClick={() => router.push("/paiement")}>
-          Procéder au paiement · {euro(total)}
-        </Button>
+        <Button className="w-full" onClick={() => router.push("/paiement")}>Procéder au paiement · {euro(total)}</Button>
       </div>
     </div>
   );

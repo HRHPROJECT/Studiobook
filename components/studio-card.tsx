@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Heart, MapPin } from "lucide-react";
 import { useBooking } from "@/lib/booking-context";
-import { gradFor, iconFor, disciplinesLabel, type Studio } from "@/lib/studios";
+import { gradFor, iconFor, disciplinesLabel, type StudioSummary } from "@/lib/studios";
 import { euro } from "@/lib/format";
 import { RatingStars } from "./ui";
 import clsx from "clsx";
@@ -13,7 +13,7 @@ export default function StudioCard({
   studio,
   variant = "full",
 }: {
-  studio: Studio;
+  studio: StudioSummary;
   variant?: "full" | "compact";
 }) {
   const router = useRouter();

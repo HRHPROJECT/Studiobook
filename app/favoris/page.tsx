@@ -1,14 +1,21 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Heart } from "lucide-react";
-import { STUDIOS } from "@/lib/studios";
 import { useBooking } from "@/lib/booking-context";
 import StudioCard from "@/components/studio-card";
 import { LinkButton } from "@/components/ui";
+import type { StudioSummary } from "@/lib/studios";
 
 export default function FavorisPage() {
   const { favorites, ready, user } = useBooking();
-  const favStudios = STUDIOS.filter((s) => favorites.includes(s.id));
+  const [studios, setStudios] = useState<StudioSummary[]>([]);
+
+  useEffect(() => {
+    fetch("/api/studios").then((r) => r.json()).then((d) => setStudios(d.studios ?? []));
+  }, []);
+
+  const favStudios = studios.filter((s) => favorites.includes(s.id));
 
   return (
     <div className="px-5 pt-6">
@@ -24,10 +31,10 @@ export default function FavorisPage() {
       )}
 
       {ready && user && favStudios.length === 0 && (
-        <div className="mt-8 rounded-2xl bg-surface p-8 text-center">
+        <div className="mt-8 rounded-2xl border border-line bg-white p-8 text-center">
           <Heart size={40} className="mx-auto text-brand-400" />
           <p className="mt-3 font-semibold text-ink">Aucun favori</p>
-          <p className="mt-1 text-sm text-muted">Touche le ♥ sur un studio pour le retrouver ici.</p>
+          <p className="mt-1 text-sm text-muted">Touche le cœur sur un studio pour le retrouver ici.</p>
           <LinkButton href="/" size="md" className="mt-4">Découvrir les studios</LinkButton>
         </div>
       )}

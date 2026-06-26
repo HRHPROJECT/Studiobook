@@ -1,9 +1,8 @@
 "use client";
 
 import { use, useEffect, useState } from "react";
-import { useRouter, notFound } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { getStudio } from "@/lib/studios";
 import { euro, hourLabel, formatDateISO, next14Days } from "@/lib/format";
 import { useBooking } from "@/lib/booking-context";
 import { Button } from "@/components/ui";
@@ -15,15 +14,19 @@ const DURATIONS = [1, 2, 3, 4];
 export default function ReservePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
-  const studio = getStudio(id);
   const { setDraft, user } = useBooking();
 
   const days = next14Days().slice(0, 8);
+  const [studio, setStudio] = useState<{ id: string; name: string; pricePerHour: number } | null>(null);
   const [date, setDate] = useState(days[1].iso);
   const [startHour, setStartHour] = useState<number | null>(null);
   const [duration, setDuration] = useState(1);
   const [slots, setSlots] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(`/api/studios/${id}`).then((r) => (r.ok ? r.json() : null)).then((d) => d?.studio && setStudio({ id: d.studio.id, name: d.studio.name, pricePerHour: d.studio.pricePerHour }));
+  }, [id]);
 
   useEffect(() => {
     let active = true;
@@ -40,7 +43,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
     return () => { active = false; };
   }, [id, date]);
 
-  if (!studio) return notFound();
+  if (!studio) return <div className="p-10 text-center text-muted" aria-busy="true">Chargement…</div>;
 
   const total = studio.pricePerHour * duration;
   // Vérifie que la durée tient dans des créneaux consécutifs disponibles
@@ -48,7 +51,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
 
   const proceed = () => {
     if (startHour === null || !durationFits) return;
-    setDraft({ studioId: studio.id, date, startHour, duration, ingeSon: false });
+    setDraft({ studioId: studio.id, studioName: studio.name, pricePerHour: studio.pricePerHour, date, startHour, duration, ingeSon: false });
     router.push(user ? "/recapitulatif" : "/connexion");
   };
 

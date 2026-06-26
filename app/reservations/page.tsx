@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { CalendarDays, ChevronRight } from "lucide-react";
-import { getStudio, iconFor } from "@/lib/studios";
+import { CalendarDays, ChevronRight, Building2 } from "lucide-react";
 import { hourLabel, formatDateISO } from "@/lib/format";
 import { useBooking } from "@/lib/booking-context";
 import { LinkButton } from "@/components/ui";
@@ -50,32 +49,27 @@ export default function ReservationsPage() {
       )}
 
       <div className="mt-5 space-y-3">
-        {list.map((b) => {
-          const studio = getStudio(b.studioId);
-          if (!studio) return null;
-          const Ic = iconFor(studio.discipline);
-          return (
-            <Link
-              key={b.ref}
-              href={`/reservations/${b.ref}`}
-              className="flex items-center gap-3.5 rounded-2xl border border-line bg-white p-3 card-shadow transition hover:-translate-y-0.5"
-            >
-              <div className={clsx("flex h-[66px] w-[66px] shrink-0 items-center justify-center rounded-xl gold-sheen", "grad-" + studio.discipline)}>
-                <Ic className="h-6 w-6 text-accent" strokeWidth={1.5} aria-hidden />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="font-bold text-ink">{studio.name}</p>
-                <p className="text-[13px] text-muted">
-                  {formatDateISO(b.date)} · {hourLabel(b.startHour)}–{hourLabel(b.startHour + b.duration)}
-                </p>
-                <p className="mt-1 inline-flex items-center gap-1.5 text-xs font-bold text-gold-dark">
-                  <span className="h-1.5 w-1.5 rounded-full bg-gold-dark" /> {tab === "avenir" ? "Confirmée" : "Terminée"}
-                </p>
-              </div>
-              <ChevronRight size={20} className="text-muted" />
-            </Link>
-          );
-        })}
+        {list.map((b) => (
+          <Link
+            key={b.ref}
+            href={`/reservations/${b.ref}`}
+            className="flex items-center gap-3.5 rounded-2xl border border-line bg-white p-3 card-shadow transition hover:-translate-y-0.5"
+          >
+            <div className="flex h-[66px] w-[66px] shrink-0 items-center justify-center rounded-xl bg-brand gold-sheen">
+              <Building2 className="h-6 w-6 text-accent" strokeWidth={1.5} aria-hidden />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="font-bold text-ink">{b.studioName}</p>
+              <p className="text-[13px] text-muted">
+                {formatDateISO(b.date)} · {hourLabel(b.startHour)}–{hourLabel(b.startHour + b.duration)}
+              </p>
+              <p className="mt-1 inline-flex items-center gap-1.5 text-xs font-bold text-gold-dark">
+                <span className="h-1.5 w-1.5 rounded-full bg-gold-dark" /> {tab === "avenir" ? "Confirmée" : "Terminée"}
+              </p>
+            </div>
+            <ChevronRight size={20} className="text-muted" />
+          </Link>
+        ))}
       </div>
     </div>
   );

@@ -3,7 +3,6 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Check, CalendarPlus } from "lucide-react";
-import { getStudio } from "@/lib/studios";
 import { euro, hourLabel, formatDateISO } from "@/lib/format";
 import { useBooking } from "@/lib/booking-context";
 import { LinkButton } from "@/components/ui";
@@ -18,8 +17,6 @@ export default function ConfirmationPage() {
   }, [ready, booking, router]);
 
   if (!booking) return null;
-  const studio = getStudio(booking.studioId);
-  if (!studio) return null;
 
   return (
     <div className="px-6 pb-12 pt-14 text-center">
@@ -30,7 +27,7 @@ export default function ConfirmationPage() {
       <p className="mt-1.5 text-[15px] text-muted">Un e-mail de confirmation t&apos;a été envoyé.</p>
 
       <div className="mt-6 rounded-2xl border border-line bg-white p-[18px] text-left">
-        <p className="font-bold text-ink">{studio.name} · {studio.district}</p>
+        <p className="font-bold text-ink">{booking.studioName}</p>
         <p className="mt-3 text-sm text-muted">
           📅&nbsp; {formatDateISO(booking.date)} · {hourLabel(booking.startHour)}–{hourLabel(booking.startHour + booking.duration)}
         </p>

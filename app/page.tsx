@@ -1,9 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Search, SlidersHorizontal } from "lucide-react";
-import { DISCIPLINES, STUDIOS } from "@/lib/studios";
+import { DISCIPLINES, type StudioSummary } from "@/lib/studios";
 import StudioCard from "@/components/studio-card";
 import { Chip } from "@/components/ui";
 
@@ -11,15 +11,19 @@ export default function HomePage() {
   const router = useRouter();
   const [q, setQ] = useState("");
   const [active, setActive] = useState("musique");
+  const [studios, setStudios] = useState<StudioSummary[]>([]);
+
+  useEffect(() => {
+    fetch("/api/studios?sort=note").then((r) => r.json()).then((d) => setStudios(d.studios ?? []));
+  }, []);
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     router.push(`/recherche?q=${encodeURIComponent(q)}&discipline=${active}`);
   };
 
-  const ranked = [...STUDIOS].sort((a, b) => b.rating - a.rating);
-  const featured = ranked[0];
-  const recommended = ranked.slice(1, 5);
+  const featured = studios[0];
+  const recommended = studios.slice(1, 5);
 
   return (
     <div>
@@ -71,7 +75,7 @@ export default function HomePage() {
       <section className="px-5 pt-6">
         <h2 className="text-lg font-bold text-ink">Studios en vedette</h2>
         <div className="mt-3">
-          <StudioCard studio={featured} />
+          {featured ? <StudioCard studio={featured} /> : <div className="h-72 animate-pulse rounded-2xl bg-[#edeae3]" />}
         </div>
       </section>
 
@@ -91,7 +95,7 @@ export default function HomePage() {
       </section>
 
       <p className="px-5 py-6 text-center text-xs text-muted">
-        StudioBook V1 — Paris · Lyon · Marseille · {STUDIOS.length} studios pilotes
+        StudioBook V1 — Paris · Lyon · Marseille · {studios.length} studios
       </p>
     </div>
   );

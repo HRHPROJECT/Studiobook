@@ -10,6 +10,7 @@ const SERVICE_FEE = 4.5;
 type BookingRow = {
   ref: string;
   studio_id: string;
+  studio_name: string;
   date: string;
   start_hour: number;
   duration: number;
@@ -24,6 +25,7 @@ export function mapBooking(r: BookingRow) {
   return {
     ref: r.ref,
     studioId: r.studio_id,
+    studioName: r.studio_name,
     date: r.date,
     startHour: Number(r.start_hour),
     duration: Number(r.duration),
@@ -35,10 +37,14 @@ export function mapBooking(r: BookingRow) {
   };
 }
 
+const SELECT_BOOKING = `SELECT b.ref, b.studio_id, s.name AS studio_name, b.date, b.start_hour, b.duration,
+  b.inge_son, b.total, b.access_code, b.status, b.created_at
+  FROM bookings b JOIN studios s ON s.id = b.studio_id`;
+
 export async function GET() {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ bookings: [] });
-  const rows = await all<BookingRow>("SELECT * FROM bookings WHERE user_id = ? ORDER BY created_at DESC", [user.id]);
+  const rows = await all<BookingRow>(`${SELECT_BOOKING} WHERE b.user_id = ? ORDER BY b.created_at DESC`, [user.id]);
   return NextResponse.json({ bookings: rows.map(mapBooking) });
 }
 
@@ -83,6 +89,6 @@ export async function POST(req: Request) {
     [ref, process.env.STRIPE_SECRET_KEY ? "stripe" : "demo", null, total, "eur", "succeeded", now, now]
   );
 
-  const row = await get<BookingRow>("SELECT * FROM bookings WHERE ref = ?", [ref]);
+  const row = await get<BookingRow>(`${SELECT_BOOKING} WHERE b.ref = ?`, [ref]);
   return NextResponse.json({ booking: mapBooking(row!) });
 }
