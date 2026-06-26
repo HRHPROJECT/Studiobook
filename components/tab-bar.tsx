@@ -15,7 +15,7 @@ const TABS = [
 ];
 
 /** Routes that present their own full-screen chrome (detail / auth / funnel) hide the tab bar. */
-const HIDE_ON = ["/connexion", "/recapitulatif", "/paiement", "/confirmation", "/studio"];
+const HIDE_ON = ["/connexion", "/recapitulatif", "/paiement", "/confirmation", "/studio", "/hote"];
 
 export default function TabBar() {
   const pathname = usePathname();

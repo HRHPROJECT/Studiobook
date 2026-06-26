@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { randomInt } from "node:crypto";
 import { all, get, run } from "@/lib/server/db";
 import { getCurrentUser } from "@/lib/server/auth";
+import { isSlotFree, suggestAlternatives } from "@/lib/server/booking";
 
 const INGE_RATE = 15;
 const SERVICE_FEE = 4.5;
@@ -54,8 +55,17 @@ export async function POST(req: Request) {
 
   const studio = await get<{ price_per_hour: number }>("SELECT price_per_hour FROM studios WHERE id = ?", [studioId]);
   if (!studio) return NextResponse.json({ error: "Studio inconnu." }, { status: 400 });
-  if (!date || !Number.isFinite(startHour) || !Number.isFinite(duration) || duration < 1)
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isInteger(startHour) || !Number.isInteger(duration) || duration < 1 || duration > 8)
     return NextResponse.json({ error: "Créneau invalide." }, { status: 400 });
+
+  // Prévention de double réservation (vérification serveur, jamais seulement côté client)
+  if (!(await isSlotFree(studioId, date, startHour, duration))) {
+    const alternatives = await suggestAlternatives(studioId, date, duration);
+    return NextResponse.json(
+      { error: "Ce créneau n'est plus disponible.", alternatives },
+      { status: 409 }
+    );
+  }
 
   const total = Number(studio.price_per_hour) * duration + (ingeSon ? INGE_RATE * duration : 0) + SERVICE_FEE;
   const ref = "SB-" + String(randomInt(10000, 99999));
@@ -63,9 +73,14 @@ export async function POST(req: Request) {
   const now = Date.now();
 
   await run(
-    `INSERT INTO bookings (ref, user_id, studio_id, date, start_hour, duration, inge_son, total, access_code, status, created_at)
-     VALUES (?,?,?,?,?,?,?,?,?,'confirmed',?)`,
-    [ref, user.id, studioId, date, startHour, duration, ingeSon ? 1 : 0, total, accessCode, now]
+    `INSERT INTO bookings (ref, user_id, studio_id, date, start_hour, duration, inge_son, total, access_code, status, created_at, updated_at)
+     VALUES (?,?,?,?,?,?,?,?,?, 'confirmed', ?, ?)`,
+    [ref, user.id, studioId, date, startHour, duration, ingeSon ? 1 : 0, total, accessCode, now, now]
+  );
+  // Trace de paiement (mode démo ; remplacé par Stripe quand les clés sont présentes)
+  await run(
+    "INSERT INTO payments (booking_ref, provider, provider_ref, amount, currency, status, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?)",
+    [ref, process.env.STRIPE_SECRET_KEY ? "stripe" : "demo", null, total, "eur", "succeeded", now, now]
   );
 
   const row = await get<BookingRow>("SELECT * FROM bookings WHERE ref = ?", [ref]);

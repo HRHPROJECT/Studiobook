@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { User, Heart, CreditCard, Bell, HelpCircle, ChevronRight } from "lucide-react";
+import { User, Heart, CreditCard, Bell, HelpCircle, ChevronRight, Store } from "lucide-react";
 import { useBooking } from "@/lib/booking-context";
 import { LinkButton } from "@/components/ui";
 
@@ -35,6 +35,15 @@ export default function ProfilPage() {
       </div>
 
       {!user && <LinkButton href="/connexion" className="mt-4 w-full">Se connecter / Créer un compte</LinkButton>}
+
+      {user && (user.role === "host" || user.role === "both" || user.role === "admin") && (
+        <a href="/hote" className="mt-4 flex items-center justify-between rounded-2xl bg-brand px-4 py-3.5 text-white">
+          <span className="flex items-center gap-3 font-bold">
+            <Store size={19} className="text-accent" /> Espace hôte
+          </span>
+          <ChevronRight size={20} className="text-accent" />
+        </a>
+      )}
 
       {/* Menu */}
       <div className="mt-5 space-y-2.5">

@@ -24,8 +24,9 @@ export type Booking = BookingDraft & {
   createdAt: number;
 };
 
-export type User = { id: number; name: string; email: string };
-export type AuthResult = { ok: boolean; error?: string };
+export type Role = "client" | "host" | "both" | "admin";
+export type User = { id: number; name: string; email: string; role: Role };
+export type AuthResult = { ok: boolean; error?: string; user?: User };
 
 type Ctx = {
   draft: BookingDraft | null;
@@ -36,9 +37,9 @@ type Ctx = {
   favorites: string[];
   toggleFavorite: (id: string) => Promise<void>;
   user: User | null;
-  signUp: (name: string, email: string, password: string) => Promise<AuthResult>;
+  signUp: (name: string, email: string, password: string, role: Role) => Promise<AuthResult>;
   signIn: (email: string, password: string) => Promise<AuthResult>;
-  signInQuick: (provider: "apple" | "google") => Promise<void>;
+  signInQuick: (provider: "apple" | "google") => Promise<User | null>;
   signOut: () => Promise<void>;
   ready: boolean;
 };
@@ -87,21 +88,22 @@ export function BookingProvider({ children }: { children: ReactNode }) {
     await loadUserData();
   };
 
-  const signUp = async (name: string, email: string, password: string): Promise<AuthResult> => {
-    const { ok, data } = await postJSON("/api/auth/signup", { name, email, password });
-    if (ok) { await afterAuth(data.user); return { ok: true }; }
+  const signUp = async (name: string, email: string, password: string, role: Role): Promise<AuthResult> => {
+    const { ok, data } = await postJSON("/api/auth/signup", { name, email, password, role });
+    if (ok) { await afterAuth(data.user); return { ok: true, user: data.user }; }
     return { ok: false, error: data.error ?? "Inscription impossible." };
   };
 
   const signIn = async (email: string, password: string): Promise<AuthResult> => {
     const { ok, data } = await postJSON("/api/auth/login", { email, password });
-    if (ok) { await afterAuth(data.user); return { ok: true }; }
+    if (ok) { await afterAuth(data.user); return { ok: true, user: data.user }; }
     return { ok: false, error: data.error ?? "Connexion impossible." };
   };
 
-  const signInQuick = async (provider: "apple" | "google") => {
+  const signInQuick = async (provider: "apple" | "google"): Promise<User | null> => {
     const { ok, data } = await postJSON("/api/auth/quick", { provider });
-    if (ok) await afterAuth(data.user);
+    if (ok) { await afterAuth(data.user); return data.user as User; }
+    return null;
   };
 
   const signOut = async () => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { useRouter, notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { getStudio } from "@/lib/studios";
@@ -9,7 +9,7 @@ import { useBooking } from "@/lib/booking-context";
 import { Button } from "@/components/ui";
 import clsx from "clsx";
 
-const HOURS = [9, 10, 11, 14, 15, 16, 17, 18, 19];
+const DISPLAY_HOURS = [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
 const DURATIONS = [1, 2, 3, 4];
 
 export default function ReservePage({ params }: { params: Promise<{ id: string }> }) {
@@ -20,15 +20,34 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
 
   const days = next14Days().slice(0, 8);
   const [date, setDate] = useState(days[1].iso);
-  const [startHour, setStartHour] = useState<number | null>(15);
+  const [startHour, setStartHour] = useState<number | null>(null);
   const [duration, setDuration] = useState(1);
+  const [slots, setSlots] = useState<number[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    fetch(`/api/studios/${id}/availability?date=${date}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (!active) return;
+        const s: number[] = d.slots ?? [];
+        setSlots(s);
+        setStartHour((cur) => (cur != null && s.includes(cur) ? cur : null));
+      })
+      .finally(() => active && setLoading(false));
+    return () => { active = false; };
+  }, [id, date]);
 
   if (!studio) return notFound();
 
   const total = studio.pricePerHour * duration;
+  // Vérifie que la durée tient dans des créneaux consécutifs disponibles
+  const durationFits = startHour != null && Array.from({ length: duration }, (_, i) => startHour + i).every((h) => slots.includes(h));
 
   const proceed = () => {
-    if (startHour === null) return;
+    if (startHour === null || !durationFits) return;
     setDraft({ studioId: studio.id, date, startHour, duration, ingeSon: false });
     router.push(user ? "/recapitulatif" : "/connexion");
   };
@@ -43,7 +62,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
       </header>
 
       <div className="px-5 pt-4">
-        <p className="text-sm font-semibold text-muted">{studio.name} · juin 2026</p>
+        <p className="text-sm font-semibold text-muted">{studio.name}</p>
 
         {/* Dates */}
         <div className="no-scrollbar mt-3 flex gap-2 overflow-x-auto pb-1">
@@ -51,6 +70,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
             <button
               key={d.iso}
               onClick={() => setDate(d.iso)}
+              aria-pressed={date === d.iso}
               className={clsx(
                 "flex h-[68px] w-[58px] shrink-0 flex-col items-center justify-center gap-1 rounded-2xl border text-sm font-semibold transition",
                 date === d.iso ? "border-brand bg-brand text-white" : "border-greige bg-white text-ink"
@@ -64,29 +84,38 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
 
         {/* Créneaux */}
         <h2 className="mb-3 mt-6 text-base font-bold text-ink">Créneaux disponibles</h2>
-        <div className="grid grid-cols-3 gap-2.5">
-          {HOURS.map((h, i) => {
-            const disabled = i === 2; // un créneau indisponible, comme le prototype
-            const selected = startHour === h;
-            return (
-              <button
-                key={h}
-                disabled={disabled}
-                onClick={() => setStartHour(h)}
-                className={clsx(
-                  "rounded-xl border py-3 text-sm font-semibold transition",
-                  disabled
-                    ? "cursor-not-allowed border-transparent bg-[#edeae3] text-muted/60"
-                    : selected
-                      ? "border-brand bg-brand text-white"
-                      : "border-greige bg-white text-ink hover:border-brand"
-                )}
-              >
-                {hourLabel(h)}
-              </button>
-            );
-          })}
-        </div>
+        {loading ? (
+          <p className="text-sm text-muted" aria-busy="true">Chargement des disponibilités…</p>
+        ) : slots.length === 0 ? (
+          <p className="rounded-2xl border border-line bg-white p-5 text-center text-sm text-muted">
+            Aucun créneau disponible ce jour. Essaie une autre date.
+          </p>
+        ) : (
+          <div className="grid grid-cols-3 gap-2.5">
+            {DISPLAY_HOURS.map((h) => {
+              const available = slots.includes(h);
+              const selected = startHour === h;
+              return (
+                <button
+                  key={h}
+                  disabled={!available}
+                  onClick={() => setStartHour(h)}
+                  aria-pressed={selected}
+                  className={clsx(
+                    "rounded-xl border py-3 text-sm font-semibold transition",
+                    !available
+                      ? "cursor-not-allowed border-transparent bg-[#edeae3] text-muted/50"
+                      : selected
+                        ? "border-brand bg-brand text-white"
+                        : "border-greige bg-white text-ink hover:border-brand"
+                  )}
+                >
+                  {hourLabel(h)}
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         {/* Durée */}
         <h2 className="mb-3 mt-6 text-base font-bold text-ink">Durée</h2>
@@ -95,6 +124,7 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
             <button
               key={d}
               onClick={() => setDuration(d)}
+              aria-pressed={duration === d}
               className={clsx(
                 "rounded-xl border py-3 text-sm font-semibold transition",
                 duration === d ? "border-brand bg-brand text-white" : "border-greige bg-white text-ink hover:border-brand"
@@ -104,16 +134,19 @@ export default function ReservePage({ params }: { params: Promise<{ id: string }
             </button>
           ))}
         </div>
+        {startHour != null && !durationFits && (
+          <p className="mt-2 text-sm text-error">Cette durée dépasse les créneaux disponibles. Réduis la durée ou choisis une autre heure.</p>
+        )}
       </div>
 
       {/* Sticky CTA */}
       <div className="fixed bottom-0 left-1/2 z-30 w-full max-w-[440px] -translate-x-1/2 border-t border-line bg-white px-5 pb-6 pt-3">
-        <p className="mb-2 text-center text-sm font-semibold text-muted">
-          {startHour !== null
+        <p className="mb-2 text-center text-sm font-semibold text-muted" aria-live="polite">
+          {startHour !== null && durationFits
             ? `${formatDateISO(date)} · ${hourLabel(startHour)}–${hourLabel(startHour + duration)} · ${euro(total)}`
             : "Sélectionne un créneau"}
         </p>
-        <Button className="w-full" disabled={startHour === null} onClick={proceed}>
+        <Button className="w-full" disabled={startHour === null || !durationFits} onClick={proceed}>
           Continuer
         </Button>
       </div>

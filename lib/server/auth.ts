@@ -5,7 +5,8 @@ import { get, run } from "./db";
 const COOKIE = "sb_session";
 const SESSION_MS = 30 * 24 * 60 * 60 * 1000; // 30 jours
 
-export type SessionUser = { id: number; name: string; email: string };
+export type Role = "client" | "host" | "both" | "admin";
+export type SessionUser = { id: number; name: string; email: string; role: Role };
 
 export function hashPassword(password: string): string {
   const salt = randomBytes(16).toString("hex");
@@ -51,8 +52,8 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
   const store = await cookies();
   const token = store.get(COOKIE)?.value;
   if (!token) return null;
-  const row = await get<{ id: number; name: string; email: string; expires_at: number }>(
-    `SELECT u.id AS id, u.name AS name, u.email AS email, s.expires_at AS expires_at
+  const row = await get<{ id: number; name: string; email: string; role: Role; expires_at: number }>(
+    `SELECT u.id AS id, u.name AS name, u.email AS email, u.role AS role, s.expires_at AS expires_at
      FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token = ?`,
     [token]
   );
@@ -61,5 +62,21 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
     await run("DELETE FROM sessions WHERE token = ?", [token]);
     return null;
   }
-  return { id: Number(row.id), name: row.name, email: row.email };
+  return { id: Number(row.id), name: row.name, email: row.email, role: (row.role ?? "client") as Role };
+}
+
+/* Helpers d'autorisation ------------------------------------------------- */
+
+export const hasHostAccess = (u: { role: Role } | null) => !!u && (u.role === "host" || u.role === "both" || u.role === "admin");
+export const hasClientAccess = (u: { role: Role } | null) => !!u && (u.role === "client" || u.role === "both" || u.role === "admin");
+
+/** Renvoie l'utilisateur courant ou null. (Les routes décident du code 401.) */
+export async function requireAuth(): Promise<SessionUser | null> {
+  return getCurrentUser();
+}
+
+/** true si l'utilisateur est propriétaire du studio donné. */
+export async function isStudioOwner(userId: number, studioId: string): Promise<boolean> {
+  const row = await get<{ owner_id: number | null }>("SELECT owner_id FROM studios WHERE id = ?", [studioId]);
+  return !!row && Number(row.owner_id) === userId;
 }
