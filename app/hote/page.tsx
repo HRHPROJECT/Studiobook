@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Building2, CalendarClock, Wallet, Star, Plus, ChevronRight, CalendarDays, MessageSquare } from "lucide-react";
+import { Building2, CalendarClock, Wallet, Star, Plus, ChevronRight, CalendarDays, CalendarRange, MessageSquare, Store, Bell } from "lucide-react";
 import HostShell from "@/components/host-shell";
 import { useBooking } from "@/lib/booking-context";
 import { euro, hourLabel, formatDateISO } from "@/lib/format";
@@ -48,8 +48,12 @@ export default function HostDashboardPage() {
         {/* Accès rapides */}
         <div className="mt-3 grid grid-cols-3 gap-3">
           <QuickLink href="/hote/reservations" icon={<CalendarDays size={18} />} label="Réservations" />
+          <QuickLink href="/hote/calendrier" icon={<CalendarRange size={18} />} label="Calendrier" />
           <QuickLink href="/hote/messages" icon={<MessageSquare size={18} />} label="Messages" />
           <QuickLink href="/hote/revenus" icon={<Wallet size={18} />} label="Revenus" />
+          <QuickLink href="/hote/avis" icon={<Star size={18} />} label="Avis clients" />
+          <QuickLink href="/hote/profil" icon={<Store size={18} />} label="Établissement" />
+          <QuickLink href="/profil/notifications" icon={<Bell size={18} />} label="Notifications" />
         </div>
 
         {/* Mes studios */}

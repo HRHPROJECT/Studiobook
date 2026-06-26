@@ -120,6 +120,9 @@ async function migrate(db: Client) {
     CREATE TABLE IF NOT EXISTS support_requests (
       id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, email TEXT, subject TEXT, body TEXT NOT NULL, created_at INTEGER NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS studio_media (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, studio_id TEXT NOT NULL, position INTEGER NOT NULL, url TEXT NOT NULL
+    );
   `);
 }
 

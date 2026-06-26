@@ -69,6 +69,12 @@ export async function POST(req: Request) {
     );
   }
 
+  const photos: string[] = Array.isArray(b.photos) ? b.photos.map((p: unknown) => String(p).trim()).filter(Boolean).slice(0, 8) : [];
+  if (photos.length) {
+    const pdb = await getDb();
+    await pdb.batch(photos.map((url, i) => ({ sql: "INSERT INTO studio_media (studio_id, position, url) VALUES (?,?,?)", args: [id, i, url] })), "write");
+  }
+
   // Disponibilités par défaut (lun-sam ou lun-ven, 9h-20h, créneaux 60 min)
   const days = openWeekend ? [1, 2, 3, 4, 5, 6] : [1, 2, 3, 4, 5];
   const db = await getDb();

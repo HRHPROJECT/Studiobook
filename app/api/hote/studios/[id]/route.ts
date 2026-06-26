@@ -13,12 +13,13 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   const s = await get<Record<string, unknown>>("SELECT * FROM studios WHERE id = ?", [id]);
   if (!s) return NextResponse.json({ error: "Introuvable." }, { status: 404 });
   const equipment = (await all<{ label: string }>("SELECT label FROM studio_equipment WHERE studio_id = ? ORDER BY position", [id])).map((e) => e.label);
+  const photos = (await all<{ url: string }>("SELECT url FROM studio_media WHERE studio_id = ? ORDER BY position", [id])).map((m) => m.url);
 
   return NextResponse.json({
     studio: {
       id: s.id, name: s.name, discipline: s.discipline, city: s.city, district: s.district,
       address: s.address, pricePerHour: Number(s.price_per_hour), capacity: Number(s.capacity ?? 1),
-      description: s.description, accessPMR: !!s.access_pmr, openWeekend: !!s.open_weekend, status: s.status, equipment,
+      description: s.description, accessPMR: !!s.access_pmr, openWeekend: !!s.open_weekend, status: s.status, equipment, photos,
     },
   });
 }
@@ -53,6 +54,13 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   if (equipment.length) {
     const db = await getDb();
     await db.batch(equipment.map((label, i) => ({ sql: "INSERT INTO studio_equipment (studio_id, position, label) VALUES (?,?,?)", args: [id, i, label] })), "write");
+  }
+
+  const photos: string[] = Array.isArray(b.photos) ? b.photos.map((p: unknown) => String(p).trim()).filter(Boolean).slice(0, 8) : [];
+  await run("DELETE FROM studio_media WHERE studio_id = ?", [id]);
+  if (photos.length) {
+    const db = await getDb();
+    await db.batch(photos.map((url, i) => ({ sql: "INSERT INTO studio_media (studio_id, position, url) VALUES (?,?,?)", args: [id, i, url] })), "write");
   }
   return NextResponse.json({ ok: true });
 }

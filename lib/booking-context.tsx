@@ -140,7 +140,7 @@ export function BookingProvider({ children }: { children: ReactNode }) {
   };
 
   const cancelBooking = async (ref: string) => {
-    setBookings((prev) => prev.filter((b) => b.ref !== ref));
+    setBookings((prev) => prev.map((b) => (b.ref === ref ? { ...b, status: "cancelled_by_client" } : b)));
     await fetch(`/api/bookings/${ref}`, { method: "DELETE" }).catch(() => {});
   };
 

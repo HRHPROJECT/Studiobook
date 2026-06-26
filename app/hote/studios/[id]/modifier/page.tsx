@@ -12,7 +12,7 @@ const input = "min-h-[50px] w-full rounded-2xl border border-greige bg-white px-
 
 type Form = {
   name: string; discipline: string; city: string; district: string; address: string;
-  pricePerHour: string; capacity: string; description: string; equipment: string; accessPMR: boolean; openWeekend: boolean;
+  pricePerHour: string; capacity: string; description: string; equipment: string; photos: string; accessPMR: boolean; openWeekend: boolean;
 };
 
 export default function EditStudioPage({ params }: { params: Promise<{ id: string }> }) {
@@ -29,7 +29,7 @@ export default function EditStudioPage({ params }: { params: Promise<{ id: strin
       setF({
         name: s.name, discipline: s.discipline, city: s.city, district: s.district, address: s.address ?? "",
         pricePerHour: String(s.pricePerHour), capacity: String(s.capacity ?? 1), description: s.description,
-        equipment: (s.equipment ?? []).join(", "), accessPMR: !!s.accessPMR, openWeekend: !!s.openWeekend,
+        equipment: (s.equipment ?? []).join(", "), photos: (s.photos ?? []).join("\n"), accessPMR: !!s.accessPMR, openWeekend: !!s.openWeekend,
       });
     });
   }, [id]);
@@ -43,7 +43,7 @@ export default function EditStudioPage({ params }: { params: Promise<{ id: strin
     setBusy(true); setError(null);
     const r = await fetch(`/api/hote/studios/${id}`, {
       method: "PATCH", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...f, pricePerHour: Number(f.pricePerHour), capacity: Number(f.capacity) || 1, equipment: f.equipment.split(",").map((s) => s.trim()).filter(Boolean) }),
+      body: JSON.stringify({ ...f, pricePerHour: Number(f.pricePerHour), capacity: Number(f.capacity) || 1, equipment: f.equipment.split(",").map((s) => s.trim()).filter(Boolean), photos: f.photos.split("\n").map((s) => s.trim()).filter(Boolean) }),
     });
     const d = await r.json().catch(() => ({}));
     setBusy(false);
@@ -81,6 +81,7 @@ export default function EditStudioPage({ params }: { params: Promise<{ id: strin
           </div>
           <L label="Description" id="description"><textarea id="description" rows={4} value={f.description} onChange={set("description")} className={`${input} min-h-[110px] py-3`} /></L>
           <L label="Équipements (virgules)" id="equipment"><input id="equipment" value={f.equipment} onChange={set("equipment")} className={input} /></L>
+          <L label="Photos (1 URL par ligne)" id="photos"><textarea id="photos" rows={2} value={f.photos} onChange={set("photos")} className={`${input} min-h-[70px] py-3`} /></L>
           <div className="space-y-2">
             <label className="flex items-center gap-3 text-sm font-medium text-ink"><input type="checkbox" checked={f.accessPMR} onChange={set("accessPMR")} className="h-5 w-5 accent-[var(--color-brand)]" /> Accès PMR</label>
             <label className="flex items-center gap-3 text-sm font-medium text-ink"><input type="checkbox" checked={f.openWeekend} onChange={set("openWeekend")} className="h-5 w-5 accent-[var(--color-brand)]" /> Ouvert le week-end</label>

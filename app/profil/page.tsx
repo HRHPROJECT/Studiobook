@@ -1,14 +1,16 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { User, Heart, CreditCard, Bell, HelpCircle, ChevronRight, Store } from "lucide-react";
+import { User, Heart, CreditCard, Bell, HelpCircle, ChevronRight, Store, Star, CalendarDays } from "lucide-react";
 import { useBooking } from "@/lib/booking-context";
 import { LinkButton } from "@/components/ui";
 
 const MENU = [
   { label: "Mes informations", Icon: User, href: "/profil/informations" },
-  { label: "Moyens de paiement", Icon: CreditCard, href: "/profil/paiement" },
+  { label: "Mes réservations", Icon: CalendarDays, href: "/reservations" },
   { label: "Mes favoris", Icon: Heart, href: "/favoris" },
+  { label: "Avis et évaluations", Icon: Star, href: "/profil/avis" },
+  { label: "Paiements", Icon: CreditCard, href: "/profil/paiements" },
   { label: "Notifications", Icon: Bell, href: "/profil/notifications" },
   { label: "Aide et support", Icon: HelpCircle, href: "/profil/aide" },
 ];

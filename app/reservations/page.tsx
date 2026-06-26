@@ -10,12 +10,15 @@ import clsx from "clsx";
 
 export default function ReservationsPage() {
   const { bookings, ready } = useBooking();
-  const [tab, setTab] = useState<"avenir" | "passees">("avenir");
+  const [tab, setTab] = useState<"avenir" | "terminees" | "annulations">("avenir");
 
   const todayISO = new Date().toISOString().slice(0, 10);
-  const upcoming = bookings.filter((b) => b.date >= todayISO);
-  const past = bookings.filter((b) => b.date < todayISO);
-  const list = tab === "avenir" ? upcoming : past;
+  const cancelled = (s: string) => s.startsWith("cancelled");
+  const upcoming = bookings.filter((b) => !cancelled(b.status) && b.date >= todayISO);
+  const past = bookings.filter((b) => !cancelled(b.status) && b.date < todayISO);
+  const annul = bookings.filter((b) => cancelled(b.status));
+  const list = tab === "avenir" ? upcoming : tab === "terminees" ? past : annul;
+  const statusLabel = tab === "avenir" ? "Confirmée" : tab === "terminees" ? "Terminée" : "Annulée";
 
   return (
     <div className="px-5 pt-6">
@@ -23,12 +26,12 @@ export default function ReservationsPage() {
 
       {/* Tabs */}
       <div className="mt-4 flex gap-1 rounded-2xl bg-[#ece9e2] p-1">
-        {([["avenir", "À venir"], ["passees", "Passées"]] as const).map(([id, label]) => (
+        {([["avenir", "À venir"], ["terminees", "Terminées"], ["annulations", "Annulations"]] as const).map(([id, label]) => (
           <button
             key={id}
             onClick={() => setTab(id)}
             className={clsx(
-              "flex-1 rounded-xl py-2 text-sm font-bold transition",
+              "flex-1 rounded-xl py-2 text-[13px] font-bold transition",
               tab === id ? "bg-white text-ink shadow-sm" : "text-muted"
             )}
           >
@@ -41,7 +44,7 @@ export default function ReservationsPage() {
         <div className="mt-8 rounded-2xl border border-line bg-white p-8 text-center">
           <CalendarDays size={40} className="mx-auto text-brand-400" />
           <p className="mt-3 font-bold text-ink">
-            {tab === "avenir" ? "Aucune réservation à venir" : "Aucune réservation passée"}
+            {tab === "avenir" ? "Aucune réservation à venir" : tab === "terminees" ? "Aucune réservation passée" : "Aucune annulation"}
           </p>
           <p className="mt-1 text-sm text-muted">Trouve un studio et réserve ton premier créneau.</p>
           <LinkButton href="/" size="md" className="mt-4">Explorer les studios</LinkButton>
@@ -63,8 +66,8 @@ export default function ReservationsPage() {
               <p className="text-[13px] text-muted">
                 {formatDateISO(b.date)} · {hourLabel(b.startHour)}–{hourLabel(b.startHour + b.duration)}
               </p>
-              <p className="mt-1 inline-flex items-center gap-1.5 text-xs font-bold text-gold-dark">
-                <span className="h-1.5 w-1.5 rounded-full bg-gold-dark" /> {tab === "avenir" ? "Confirmée" : "Terminée"}
+              <p className={clsx("mt-1 inline-flex items-center gap-1.5 text-xs font-bold", tab === "annulations" ? "text-error" : "text-gold-dark")}>
+                <span className={clsx("h-1.5 w-1.5 rounded-full", tab === "annulations" ? "bg-error" : "bg-gold-dark")} /> {statusLabel}
               </p>
             </div>
             <ChevronRight size={20} className="text-muted" />

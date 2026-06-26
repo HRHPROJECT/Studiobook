@@ -13,7 +13,7 @@ export default function NewStudioPage() {
   const router = useRouter();
   const [f, setF] = useState({
     name: "", discipline: "musique", city: "", district: "", address: "",
-    pricePerHour: "", capacity: "", description: "", equipment: "", accessPMR: false, openWeekend: true,
+    pricePerHour: "", capacity: "", description: "", equipment: "", photos: "", accessPMR: false, openWeekend: true,
   });
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -33,6 +33,7 @@ export default function NewStudioPage() {
         pricePerHour: Number(f.pricePerHour),
         capacity: Number(f.capacity) || 1,
         equipment: f.equipment.split(",").map((s) => s.trim()).filter(Boolean),
+        photos: f.photos.split("\n").map((s) => s.trim()).filter(Boolean),
       }),
     });
     const data = await res.json().catch(() => ({}));
@@ -90,6 +91,10 @@ export default function NewStudioPage() {
 
         <Labeled label="Équipements" htmlFor="equipment" hint="Séparés par des virgules.">
           <input id="equipment" value={f.equipment} onChange={set("equipment")} placeholder="Piano, Console, Casques ×4, Wi-Fi" className={input} />
+        </Labeled>
+
+        <Labeled label="Photos" htmlFor="photos" hint="Une URL d'image par ligne (https://…).">
+          <textarea id="photos" value={f.photos} onChange={set("photos")} rows={2} placeholder="https://exemple.com/studio-1.jpg" className={`${input} min-h-[70px] py-3`} />
         </Labeled>
 
         <div className="space-y-2">

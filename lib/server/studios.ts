@@ -57,7 +57,7 @@ export async function listPublicStudios(f: StudioFilters): Promise<PublicStudioS
 
 export type PublicStudioDetail = PublicStudioSummary & {
   metro: string; address: string; description: string; accessPMR: boolean; openWeekend: boolean;
-  equipment: string[]; reviews: { author: string; rating: number; date: string; text: string }[];
+  equipment: string[]; photos: string[]; reviews: { author: string; rating: number; date: string; text: string }[];
 };
 
 export async function getPublicStudioDetail(id: string): Promise<PublicStudioDetail | null> {
@@ -72,6 +72,7 @@ export async function getPublicStudioDetail(id: string): Promise<PublicStudioDet
   const base = summary(r, openToday);
 
   const equipment = (await all<{ label: string }>("SELECT label FROM studio_equipment WHERE studio_id = ? ORDER BY position", [id])).map((e) => e.label);
+  const photos = (await all<{ url: string }>("SELECT url FROM studio_media WHERE studio_id = ? ORDER BY position", [id])).map((m) => m.url);
   const reviews = await all<{ author: string; rating: number; date: string; text: string }>(
     "SELECT author, rating, date, text FROM reviews WHERE studio_id = ? ORDER BY id DESC", [id]
   );
@@ -80,6 +81,6 @@ export async function getPublicStudioDetail(id: string): Promise<PublicStudioDet
     ...base,
     metro: String(r.metro ?? ""), address: String(r.address ?? ""), description: String(r.description ?? ""),
     accessPMR: !!r.access_pmr, openWeekend: !!r.open_weekend,
-    equipment, reviews: reviews.map((x) => ({ author: x.author, rating: Number(x.rating), date: x.date, text: x.text })),
+    equipment, photos, reviews: reviews.map((x) => ({ author: x.author, rating: Number(x.rating), date: x.date, text: x.text })),
   };
 }

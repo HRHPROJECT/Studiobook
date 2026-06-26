@@ -13,7 +13,7 @@ type Detail = {
   id: string; name: string; discipline: Discipline; disciplines: Discipline[]; district: string; distanceKm: number;
   pricePerHour: number; rating: number; reviewCount: number; verified: boolean; topHost: boolean;
   metro: string; address: string; description: string; accessPMR: boolean;
-  equipment: string[]; reviews: { author: string; rating: number; date: string; text: string }[];
+  equipment: string[]; photos: string[]; reviews: { author: string; rating: number; date: string; text: string }[];
 };
 
 export default function StudioPage({ params }: { params: Promise<{ id: string }> }) {
@@ -57,7 +57,12 @@ export default function StudioPage({ params }: { params: Promise<{ id: string }>
   return (
     <div className="pb-28">
       <div className={`relative flex h-72 items-center justify-center gold-sheen ${"grad-" + studio.discipline}`}>
-        <Ic className="h-16 w-16 text-accent/90" strokeWidth={1.4} aria-hidden />
+        {studio.photos?.length ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={studio.photos[0]} alt={`Photo de ${studio.name}`} className="absolute inset-0 h-full w-full object-cover" />
+        ) : (
+          <Ic className="h-16 w-16 text-accent/90" strokeWidth={1.4} aria-hidden />
+        )}
         <div className="absolute inset-x-0 top-0 flex items-center justify-between p-4">
           <button onClick={() => router.back()} aria-label="Retour" className="flex h-10 w-10 items-center justify-center rounded-full bg-black/30 text-white backdrop-blur">
             <ArrowLeft size={20} />
