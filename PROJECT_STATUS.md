@@ -236,3 +236,42 @@ npm run build && npm run start
 
 Compte de démo : boutons Google / Apple (session de test instantanée).
 Paiement de démo : carte `4242 4242 4242 4242` réussit, `…0000` simule un refus.
+Hôte de démo : `studio@demo.studiobook` / `demohost1` (propriétaire des studios seedés).
+
+---
+
+## 11. Mise à jour — passage en marketplace (2026-06-26)
+
+### Désormais fait et vérifié de bout en bout
+- [x] **Comptes à rôles** : client / hôte / les deux, choix à l'inscription, redirection par rôle.
+- [x] **Espace hôte complet** : tableau de bord (studios, réservations, revenus, note), création
+      et **édition** de studio, **gestion des disponibilités** (horaires par jour + dates bloquées),
+      réservations reçues, revenus, messages. Chaque hôte ne gère que ses studios.
+- [x] **Disponibilités réelles + anti double-réservation** : créneaux calculés par studio ;
+      un créneau réservé devient indisponible ; conflit serveur renvoie 409 + alternatives.
+- [x] **Marketplace réelle** : un studio créé par un hôte apparaît dans la recherche/accueil,
+      est consultable et **réservable** par un client (vérifié : navigation 9 studios, réservation, total).
+- [x] **Messagerie persistante** client ↔ hôte (conversations, fil, non-lus, accès réservé aux participants).
+- [x] **Avis** : éligibilité après réservation terminée, publication, recalcul de la note du studio.
+- [x] **Sous-pages Profil réelles** : informations, notifications (préférences), moyens de paiement, aide (FAQ + support).
+- [x] **Calendrier .ics** réel (« Ajouter au calendrier »).
+- [x] **Pages légales** : CGV, confidentialité, mentions légales, accessibilité, cookies (+ liens footer).
+- [x] **SEO** : sitemap.xml, robots.txt ; **en-têtes de sécurité** (X-Frame-Options, Referrer-Policy, HSTS en prod…).
+- [x] **Statuts de réservation** + traçabilité paiement (table `payments`, mode démo ou Stripe selon env).
+
+### Reste à faire (prochaines itérations)
+- [ ] **Stripe réel** : la table `payments` et la logique de statut existent ; brancher le vrai paiement
+      (Payment Intents + webhook) quand `STRIPE_SECRET_KEY` est fourni.
+- [ ] **E-mails / SMS réels** : adaptateurs à brancher (Resend / Twilio) ; le `.ics` est fait.
+- [ ] **Panneau de filtres avancés** : discipline + tri sont actifs ; reste prix / ville / PMR / capacité.
+- [ ] **Tests automatisés** (unitaires + e2e Playwright) et CI.
+- [ ] **CSRF + rate limiting** (les en-têtes de sécurité sont en place).
+- [ ] **Réinitialisation de mot de passe** (table `password_reset_tokens` prête).
+- [ ] **Adaptation desktop/tablette** plus large (l'app reste en colonne mobile centrée).
+- [ ] **Carte réelle** (Mapbox) et **upload de photos** de studios.
+- [ ] **Espace admin / modération** (champs `status` prêts).
+
+### Variables d'environnement (production)
+Requises : `TURSO_DATABASE_URL`, `TURSO_AUTH_TOKEN`.
+Optionnelles (activent le mode réel sinon démo) : `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`,
+`RESEND_API_KEY`, `TWILIO_*`, `MAPBOX_TOKEN`.
