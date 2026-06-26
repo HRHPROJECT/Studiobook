@@ -117,6 +117,9 @@ async function migrate(db: Client) {
     CREATE TABLE IF NOT EXISTS password_reset_tokens (
       token TEXT PRIMARY KEY, user_id INTEGER NOT NULL, expires_at INTEGER NOT NULL, created_at INTEGER NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS support_requests (
+      id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, email TEXT, subject TEXT, body TEXT NOT NULL, created_at INTEGER NOT NULL
+    );
   `);
 }
 

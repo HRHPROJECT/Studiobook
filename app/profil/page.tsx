@@ -6,11 +6,11 @@ import { useBooking } from "@/lib/booking-context";
 import { LinkButton } from "@/components/ui";
 
 const MENU = [
-  { label: "Mes informations", Icon: User, href: "/profil" },
-  { label: "Moyens de paiement", Icon: CreditCard, href: "/profil" },
+  { label: "Mes informations", Icon: User, href: "/profil/informations" },
+  { label: "Moyens de paiement", Icon: CreditCard, href: "/profil/paiement" },
   { label: "Mes favoris", Icon: Heart, href: "/favoris" },
-  { label: "Notifications", Icon: Bell, href: "/profil" },
-  { label: "Aide et support", Icon: HelpCircle, href: "/profil" },
+  { label: "Notifications", Icon: Bell, href: "/profil/notifications" },
+  { label: "Aide et support", Icon: HelpCircle, href: "/profil/aide" },
 ];
 
 export default function ProfilPage() {
@@ -67,7 +67,14 @@ export default function ProfilPage() {
         </button>
       )}
 
-      <p className="mt-6 text-center text-xs text-muted">StudioBook · V1 démo</p>
+      <nav aria-label="Liens légaux" className="mt-6 flex flex-wrap justify-center gap-x-3 gap-y-1 text-center text-xs text-muted">
+        <a href="/cgv" className="underline">CGV</a>
+        <a href="/confidentialite" className="underline">Confidentialité</a>
+        <a href="/mentions-legales" className="underline">Mentions légales</a>
+        <a href="/accessibilite" className="underline">Accessibilité</a>
+        <a href="/cookies" className="underline">Cookies</a>
+      </nav>
+      <p className="mt-3 text-center text-xs text-muted">StudioBook · V1 démo</p>
     </div>
   );
 }

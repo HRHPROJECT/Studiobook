@@ -2,7 +2,7 @@
 
 import { use } from "react";
 import { useRouter, notFound } from "next/navigation";
-import { ArrowLeft, Heart, MapPin, Train, ShieldCheck, Accessibility, Star } from "lucide-react";
+import { ArrowLeft, Heart, MapPin, Train, ShieldCheck, Accessibility, Star, MessageCircle } from "lucide-react";
 import { getStudio, iconFor, disciplinesLabel } from "@/lib/studios";
 import { euro } from "@/lib/format";
 import { useBooking } from "@/lib/booking-context";
@@ -17,6 +17,13 @@ export default function StudioPage({ params }: { params: Promise<{ id: string }>
   if (!studio) return notFound();
   const fav = favorites.includes(studio.id);
   const Ic = iconFor(studio.discipline);
+
+  const contactHost = async () => {
+    if (!user) { router.push("/connexion"); return; }
+    const r = await fetch("/api/conversations", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ studioId: studio.id }) });
+    const d = await r.json().catch(() => ({}));
+    if (r.ok && d.id) router.push(`/messages/${d.id}`);
+  };
 
   return (
     <div className="pb-28">
@@ -61,6 +68,10 @@ export default function StudioPage({ params }: { params: Promise<{ id: string }>
           {studio.topHost && <Badge tone="gold">Top hôte</Badge>}
           {studio.accessPMR && <Badge tone="brand"><Accessibility size={13} /> Accès PMR</Badge>}
         </div>
+
+        <button onClick={contactHost} className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl border-[1.5px] border-brand bg-transparent py-3 text-[15px] font-bold text-ink transition active:scale-[0.99]">
+          <MessageCircle size={18} className="text-accent" /> Contacter le studio
+        </button>
 
         <Section title="À propos du studio">
           <p className="text-sm leading-relaxed text-muted">{studio.description}</p>

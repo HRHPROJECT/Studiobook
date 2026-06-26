@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Building2, CalendarClock, Wallet, Star, Plus, ChevronRight } from "lucide-react";
+import { Building2, CalendarClock, Wallet, Star, Plus, ChevronRight, CalendarDays, MessageSquare } from "lucide-react";
 import HostShell from "@/components/host-shell";
 import { useBooking } from "@/lib/booking-context";
 import { euro, hourLabel, formatDateISO } from "@/lib/format";
@@ -45,6 +45,13 @@ export default function HostDashboardPage() {
           <Plus size={18} /> Ajouter un studio
         </Link>
 
+        {/* Accès rapides */}
+        <div className="mt-3 grid grid-cols-3 gap-3">
+          <QuickLink href="/hote/reservations" icon={<CalendarDays size={18} />} label="Réservations" />
+          <QuickLink href="/hote/messages" icon={<MessageSquare size={18} />} label="Messages" />
+          <QuickLink href="/hote/revenus" icon={<Wallet size={18} />} label="Revenus" />
+        </div>
+
         {/* Mes studios */}
         <h2 className="mt-7 text-lg font-bold text-ink">Mes studios</h2>
         {loading ? (
@@ -52,7 +59,7 @@ export default function HostDashboardPage() {
         ) : data && data.studios.length > 0 ? (
           <div className="mt-3 space-y-2.5">
             {data.studios.map((s) => (
-              <Link key={s.id} href={`/studio/${s.id}`} className="flex items-center gap-3 rounded-2xl border border-line bg-white p-3.5 transition hover:bg-surface">
+              <Link key={s.id} href={`/hote/studios/${s.id}/modifier`} className="flex items-center gap-3 rounded-2xl border border-line bg-white p-3.5 transition hover:bg-surface">
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-bold text-ink">{s.name}</p>
                   <p className="text-[13px] text-muted">{labelFor(s.discipline)} · {s.district} · {euro(s.pricePerHour)}/h</p>
@@ -91,6 +98,15 @@ export default function HostDashboardPage() {
         )}
       </div>
     </HostShell>
+  );
+}
+
+function QuickLink({ href, icon, label }: { href: string; icon: React.ReactNode; label: string }) {
+  return (
+    <Link href={href} className="flex flex-col items-center gap-1.5 rounded-2xl border border-line bg-white p-3 text-center">
+      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-surface text-accent">{icon}</span>
+      <span className="text-xs font-semibold text-ink">{label}</span>
+    </Link>
   );
 }
 

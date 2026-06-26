@@ -6,7 +6,7 @@ import { Check, CalendarPlus } from "lucide-react";
 import { getStudio } from "@/lib/studios";
 import { euro, hourLabel, formatDateISO } from "@/lib/format";
 import { useBooking } from "@/lib/booking-context";
-import { Button, LinkButton } from "@/components/ui";
+import { LinkButton } from "@/components/ui";
 
 export default function ConfirmationPage() {
   const router = useRouter();
@@ -52,9 +52,12 @@ export default function ConfirmationPage() {
         <LinkButton href={`/reservations/${booking.ref}`} className="w-full">
           Voir ma réservation
         </LinkButton>
-        <Button variant="outline" className="w-full">
+        <a
+          href={`/api/bookings/${booking.ref}/ics`}
+          className="flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl border-[1.5px] border-brand bg-transparent text-base font-bold text-ink transition active:scale-[0.99]"
+        >
           <CalendarPlus size={18} /> Ajouter au calendrier
-        </Button>
+        </a>
         <button onClick={() => router.push("/")} className="w-full pt-1 text-sm font-semibold text-muted">
           Retour à l&apos;accueil
         </button>

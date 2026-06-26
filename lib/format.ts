@@ -6,6 +6,19 @@ export const euro = (n: number) =>
 
 export const hourLabel = (h: number) => `${String(h).padStart(2, "0")}h`;
 
+/** Heure courte ou jour pour les listes de messages. */
+export function timeAgo(ms: number): string {
+  if (!ms) return "";
+  const d = new Date(ms);
+  const now = new Date();
+  const sameDay = d.toDateString() === now.toDateString();
+  if (sameDay) return d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+  const diffDays = Math.floor((now.getTime() - d.getTime()) / 86400000);
+  if (diffDays === 1) return "Hier";
+  if (diffDays < 7) return ["dim", "lun", "mar", "mer", "jeu", "ven", "sam"][d.getDay()];
+  return d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit" });
+}
+
 export function makeRef() {
   return "SB-" + Math.floor(10000 + Math.random() * 89999);
 }
