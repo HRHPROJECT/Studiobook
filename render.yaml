@@ -9,7 +9,9 @@ services:
     runtime: node
     plan: free
     region: frankfurt
-    buildCommand: npm ci && npm run build
+    # --include=dev force l'installation des devDependencies (tailwind, typescript…)
+    # malgré NODE_ENV=production, sinon le build échoue (@tailwindcss/postcss manquant).
+    buildCommand: npm ci --include=dev && npm run build
     startCommand: npm run start
     autoDeploy: true
     envVars:
